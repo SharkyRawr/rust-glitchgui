@@ -9,4 +9,6 @@ edition = "2018"
 [dependencies]
 gtk = "0.8.1"
 gio = "0.8.1"
+gdk-pixbuf = "0.8.0"
 glib = "0.9.3"
+rand = "0.7.3"

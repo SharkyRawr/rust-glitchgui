@@ -28,6 +28,10 @@ impl Header {
         btn_load.set_widget_name("btn_load");
         container.add(&btn_load);
 
+        let btn_save = Button::new_from_icon_name(Some("document-save"), gtk::IconSize::Button);
+        btn_save.set_widget_name("btn_save");
+        container.add(&btn_save);
+
         Header { container }
     }
 
@@ -53,17 +57,11 @@ fn main() {
         let main_window: gtk::ApplicationWindow = builder.get_object(&"MainWindow").expect("Could not get MainWindow ?!");
         main_window.set_application(Some(app));
         main_window.set_resizable(true);
+        main_window.resize(640, 480);
 
         // Set titlebar for dragging the window around
         let hdr_bar = Header::new();
         main_window.set_titlebar(Some(&hdr_bar.container));
-        
-        
-        let btn_exit: gtk::Button = builder.get_object(&"btn_exit").expect("Could not get btn_exit?!");
-        btn_exit.connect_clicked(clone!(@weak main_window => move |_| {
-            // todo: Ask if we are sure?
-            main_window.close();
-        }));
 
 
         //let btn_load: gtk::Button = builder.get_object(&"btn_load").expect("Could not get btn_load?!");
@@ -83,16 +81,12 @@ fn main() {
             file_filter.add_pattern(&"*.jpg");
             fc.set_filter(&file_filter);
 
-            match fc.run() {
-                gtk::ResponseType::Ok => {
-                    // ok, load file
-                    //let source_image = gtk::Image::new_from_file(fc.get_filename().unwrap());
+            if let gtk::ResponseType::Ok = fc.run() {
+                // ok, load file
+                //let source_image = gtk::Image::new_from_file(fc.get_filename().unwrap());
 
-                    let img_image: gtk::Image = builder.get_object(&"img_image").expect("Could not get img_image?!");
-                    img_image.set_from_file(fc.get_filename().unwrap());
-                },
-                gtk::ResponseType::Cancel => return,
-                _ => ()
+                let img_image: gtk::Image = builder.get_object(&"img_image").expect("Could not get img_image?!");
+                img_image.set_from_file(fc.get_filename().unwrap());
             };
             fc.destroy();
             

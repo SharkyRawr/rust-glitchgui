@@ -2,24 +2,7 @@
 <!-- Generated with glade 3.36.0 -->
 <interface>
   <requires lib="gtk+" version="3.22"/>
-  <object class="GtkImage" id="img_close">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="icon_name">dialog-close</property>
-  </object>
-  <object class="GtkImage" id="img_load">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="icon_name">document-new</property>
-  </object>
-  <object class="GtkImage" id="img_save">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="icon_name">document-save</property>
-  </object>
   <object class="GtkApplicationWindow" id="MainWindow">
-    <property name="width_request">640</property>
-    <property name="height_request">420</property>
     <property name="can_focus">False</property>
     <property name="window_position">center</property>
     <child>
@@ -27,62 +10,6 @@
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="orientation">vertical</property>
-        <child>
-          <object class="GtkHeaderBar" id="header_bar">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="hexpand">True</property>
-            <property name="title" translatable="yes">Rust GlitchGui</property>
-            <property name="show_close_button">True</property>
-            <child>
-              <object class="GtkButton" id="__btn_load">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="image">img_load</property>
-                <property name="always_show_image">True</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkButton" id="btn_exit">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="halign">end</property>
-                <property name="margin_start">4</property>
-                <property name="margin_end">4</property>
-                <property name="image">img_close</property>
-                <property name="always_show_image">True</property>
-              </object>
-              <packing>
-                <property name="pack_type">end</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton" id="btn_save">
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="image">img_save</property>
-              </object>
-              <packing>
-                <property name="position">2</property>
-              </packing>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
         <child>
           <object class="GtkImage" id="img_image">
             <property name="visible">True</property>
@@ -94,13 +21,21 @@
           <packing>
             <property name="expand">True</property>
             <property name="fill">True</property>
-            <property name="position">1</property>
+            <property name="position">0</property>
           </packing>
+        </child>
+        <child>
+          <placeholder/>
         </child>
       </object>
     </child>
     <child type="titlebar">
       <placeholder/>
     </child>
+  </object>
+  <object class="GtkImage" id="img_close">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="icon_name">dialog-close</property>
   </object>
 </interface>

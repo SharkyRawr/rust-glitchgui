@@ -98,6 +98,23 @@ fn glitch_imagefile_by_numbytes(
     Err(gdk_pixbuf::PixbufError::Failed)
 }
 
+fn save_pixbuf(pixbuf: &gdk_pixbuf::Pixbuf, path: &std::path::PathBuf) -> Result<(), glib::error::Error> {
+
+    let filetype = match path.extension() {
+            Some(e) => {
+                e.to_str().unwrap().replace("jpg", "jpeg")
+            },
+            None => "jpeg".to_string()
+    };
+    let mut path = std::path::PathBuf::from(path);
+    path.set_extension(&filetype);
+    // todo: can we automate this from the FileChooser filter??
+
+    //let filetype = path.extension().unwrap().to_str().unwrap().to_string().replace("jpg", "jpeg");
+    let empty_options: &[(&str, &str)] = &[("", "")];
+    pixbuf.savev(path, &filetype, empty_options)
+}
+
 fn main() {
     let uiapp = gtk::Application::new(
         Some("pw.sharky.rust.glitchgui"),
@@ -152,9 +169,28 @@ fn main() {
                 ]);
 
                 let file_filter = FileFilter::new();
+                file_filter.set_name(Some("All supported image files"));
                 file_filter.add_pattern(&"*.jpg");
+                file_filter.add_pattern(&"*.jpeg");
+                file_filter.add_pattern(&"*.png");
+                file_filter.add_pattern(&"*.gif");
+                fc.add_filter(&file_filter);
+
+                let file_filter = FileFilter::new();
+                file_filter.set_name(Some("JPEG images (*.jpg)"));
                 file_filter.add_pattern(&"*.jpg");
-                fc.set_filter(&file_filter);
+                file_filter.add_pattern(&"*.jpeg");
+                fc.add_filter(&file_filter);
+
+                let file_filter = FileFilter::new();
+                file_filter.set_name(Some("PNG images (*.png)"));
+                file_filter.add_pattern(&"*.png");
+                fc.add_filter(&file_filter);
+
+                let file_filter = FileFilter::new();
+                file_filter.set_name(Some("GIF images (*.gif)"));
+                file_filter.add_pattern(&"*.gif");
+                fc.add_filter(&file_filter);
 
                 if let gtk::ResponseType::Ok = fc.run() {
                     // ok, load file
@@ -224,6 +260,56 @@ fn main() {
                         dlg.destroy();
                     }
                 }
+            });
+        }
+
+        {
+            let arc_hdr_bar = arc_hdr_bar.clone();
+            let arc_filename = arc_filename.clone();
+
+            let btn_save: gtk::Button = arc_hdr_bar.lock().unwrap().get_titlebar_button("btn_save").expect("Could not get btn_save?!");
+            btn_save.connect_clicked(move |_| {
+                if arc_filename.lock().unwrap().is_empty() { return; }
+
+                let fcb = gtk::FileChooserDialogBuilder::new();
+                let fc: FileChooserDialog = fcb.build();
+                fc.set_action(gtk::FileChooserAction::Save);
+                fc.add_buttons(&[
+                    (&"Save", gtk::ResponseType::Ok),
+                    (&"Cancel", gtk::ResponseType::Cancel),
+                ]);
+
+                let file_filter = FileFilter::new();
+                file_filter.set_name(Some("JPEG images (*.jpg)"));
+                file_filter.add_pattern(&"*.jpg");
+                file_filter.add_pattern(&"*.jpeg");
+                fc.add_filter(&file_filter);
+
+                let file_filter = FileFilter::new();
+                file_filter.set_name(Some("PNG images (*.png)"));
+                file_filter.add_pattern(&"*.png");
+                fc.add_filter(&file_filter);
+
+                if let gtk::ResponseType::Ok = fc.run() {
+                    // ok, load file
+                    let save_filename = fc.get_filename().unwrap().to_str().unwrap().to_string();
+                    println!("Saving pixbuf to: {}", save_filename);
+
+                    let img_image: gtk::Image = arc_builder.lock().unwrap()
+                        .get_object(&"img_image")
+                        .expect("Could not get img_image?!");
+                    
+                    match save_pixbuf(&img_image.get_pixbuf().unwrap(), &fc.get_filename().unwrap()) {
+                        Ok(_) => {
+                            // file saved successfully
+                        },
+                        Err(e) => {
+                            // Error saving file, display error box!
+                            println!("Save failed: {:?}", e);
+                        }
+                    }
+                };
+                fc.destroy();
             });
         }
         

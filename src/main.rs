@@ -28,7 +28,7 @@ pub struct Header {
 impl Header {
     pub fn new() -> Self {
         let container = gtk::HeaderBar::new();
-        container.set_title(Some("Rust GlitchGUI by Sharky"));
+        container.set_title(Some("Rust GlitchGUI by Sharky & 0xADD1E"));
         container.set_show_close_button(true);
 
         let btn_load = Button::new_from_icon_name(Some("document-new"), gtk::IconSize::Button);
@@ -306,6 +306,17 @@ fn main() {
                         Err(e) => {
                             // Error saving file, display error box!
                             println!("Save failed: {:?}", e);
+
+                            let dlg = gtk::MessageDialog::new(
+                                Some(&((arc_builder.lock().unwrap()).get_object::<gtk::ApplicationWindow>("MainWindow").unwrap())),
+                                gtk::DialogFlags::empty(), 
+                                gtk::MessageType::Error,
+                                gtk::ButtonsType::Ok,
+                                &e.to_string()
+                            );
+                            
+                            dlg.run();
+                            dlg.destroy();
                         }
                     }
                 };

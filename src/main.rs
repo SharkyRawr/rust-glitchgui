@@ -18,6 +18,7 @@ use gtk::{Builder, Button, FileChooserDialog, FileFilter};
 
 use std::env;
 use std::io::Read;
+use std::sync::{Arc, Mutex};
 
 #[derive(Default)]
 pub struct Header {
@@ -97,10 +98,10 @@ fn main() {
     .expect("Application::new failed");
     uiapp.connect_activate(|app| {
         let builder: Builder = Builder::new_from_string(include_str!("main_window.glade"));
+        let builder_c = Arc::new(Mutex::new(builder));
+        let builder_c2 = builder_c.clone(); // so every owner of a mutex lock gets a clone? coolio?
 
-        let main_window: gtk::ApplicationWindow = builder
-            .get_object(&"MainWindow")
-            .expect("Could not get MainWindow ?!");
+        let main_window: gtk::ApplicationWindow = builder_c.lock().unwrap().get_object(&"MainWindow").expect("Could not get MainWindow ?!");
         main_window.set_application(Some(app));
         main_window.set_resizable(true);
         main_window.resize(640, 480);
@@ -119,13 +120,15 @@ fn main() {
         //    (this is the fancy one and i wouldn't recommend it but i think it's cool)
         // 2. Just start the operation from inside the callback
         //    (the easy option)
-        // 3. Have some amount of global shared mutable memory, with an Arc<Mutex<T>>
-        //    (the c developer option)
+        // 3. Have some amount of global shared mutable memory, with an Arc<Mutex<T>> 👈
+        //    (the c developer option)  👈
 
-        // move fixes that, just need a reference of some type inside the closure and clone does that ( ithink)
-        let btn_load: Button = hdr_bar
-            .get_titlebar_button("btn_load")
-            .expect("Could not get btn_load?!");
+        
+        let filename = Arc::new(Mutex::new(String::new()));
+        let filename_c = filename.clone();
+        let filename_c2 = filename.clone();
+
+        let btn_load: Button = hdr_bar.get_titlebar_button("btn_load").expect("Could not get btn_load?!");
         btn_load.connect_clicked(move |_| {
             // todo: ask if we want to overwrite the already loaded image?
 
@@ -144,31 +147,28 @@ fn main() {
 
             if let gtk::ResponseType::Ok = fc.run() {
                 // ok, load file
-                //filename = fc.get_filename().unwrap();
+                *filename_c.lock().unwrap() = fc.get_filename().unwrap().to_str().unwrap().to_string();
 
-                let img_image: gtk::Image = builder
+                let img_image: gtk::Image = builder_c.lock().unwrap()
                     .get_object(&"img_image")
                     .expect("Could not get img_image?!");
-                let btn_num: gtk::SpinButton = hdr_bar.get_titlebar_button("btn_num").unwrap();
-                //img_image.set_from_file(fc.get_filename().unwrap());
-                let glitched_buf = glitch_imagefile_by_numbytes(
-                    &fc.get_filename().unwrap(),
-                    btn_num.get_value_as_int() as u32,
-                );
-                img_image.set_from_pixbuf(Some(&glitched_buf));
+                img_image.set_from_file(fc.get_filename().unwrap());
             };
             fc.destroy();
         });
-        /*
-                let btn_num: gtk::SpinButton = hdr_bar.get_titlebar_button("btn_num").expect("Could not get btn_num?!");
-                btn_num.connect_changed(clone!(@strong filename => move |me| {
-                    let value = me.get_value_as_int();
 
-                    let glitched_buf = glitch_imagefile_by_numbytes(&filename, value as u32);
-                    let img_image: gtk::Image = builder.get_object(&"img_image").expect("Could not get img_image?!");
-                    img_image.set_from_pixbuf(Some(&glitched_buf));
-                }));
-        */
+        
+        let btn_num: gtk::SpinButton = hdr_bar.get_titlebar_button("btn_num").expect("Could not get btn_num?!");
+        btn_num.connect_changed(move |me| {
+            let value = me.get_value_as_int();
+            let input_file_name = &*filename_c2.lock().unwrap(); // what is this &* and why does it work lmao
+
+            let glitched_buf = glitch_imagefile_by_numbytes(&std::path::PathBuf::from(input_file_name), value as u32);
+            let img_image: gtk::Image = builder_c2.lock().unwrap().get_object(&"img_image").expect("Could not get img_image?!");
+            img_image.set_from_pixbuf(Some(&glitched_buf));
+        });
+
+        
 
         main_window.show_all();
     });

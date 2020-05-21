@@ -58,7 +58,10 @@ impl Header {
     }
 }
 
-fn glitch_imagefile_by_numbytes(path: &std::path::PathBuf, numbytes: u32) -> gdk_pixbuf::Pixbuf {
+fn glitch_imagefile_by_numbytes(
+    path: &std::path::PathBuf,
+    num_glitches: u32,
+) -> gdk_pixbuf::Pixbuf {
     let mut rng = rand::thread_rng();
     let file = std::fs::File::open(path).unwrap();
     let mut br = std::io::BufReader::new(file);
@@ -67,24 +70,13 @@ fn glitch_imagefile_by_numbytes(path: &std::path::PathBuf, numbytes: u32) -> gdk
 
     //let orig_image_bytes = bytes.clone(); // for later
 
-    let glitch_amount = 1024;
-    let bytes: Vec<u8> = bytes
-        .iter()
-        .map(|orig_byte| {
-            if rng.next_u32() % glitch_amount == 0 {
-                (rng.next_u32() % 256) as u8
-            } else {
-                *orig_byte
-            }
-        })
-        .collect();
-
-    /*
-    for _ in 0..numbytes {
-        let rnd = rng.next_u32() % bytes.len() as u32;
-        bytes[rnd as usize] = (rng.next_u32() % 256) as u8;
+    for _ in 0..num_glitches {
+        let glitch_index = (rng.next_u32() as usize % bytes.len()) as usize; 
+        // 💋
+        // no u
+        
+        bytes[glitch_index] = (rng.next_u32() % 256) as u8;
     }
-    */
 
     let glib_bytes = glib::Bytes::from_owned(bytes);
     let instream = gio::MemoryInputStream::new_from_bytes(&glib_bytes);
@@ -93,7 +85,7 @@ fn glitch_imagefile_by_numbytes(path: &std::path::PathBuf, numbytes: u32) -> gdk
     match gdk_pixbuf::Pixbuf::new_from_stream(&instream, not_cancellable) {
         Ok(a) => a,
 
-        Err(e) => panic!(e.to_string()), // todo repeat until parseable
+        Err(e) => panic!(e.to_string()), // todo repeat glitching until parseable
     }
 }
 
@@ -183,18 +175,6 @@ fn main() {
 
     uiapp.run(&env::args().collect::<Vec<_>>());
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

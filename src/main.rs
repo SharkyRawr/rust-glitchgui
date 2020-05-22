@@ -11,9 +11,9 @@ use gio::prelude::*;
 use gtk::prelude::*;
 use rand::prelude::*;
 
-use glib::clone;
+//use glib::clone;
 
-use gdk_pixbuf::Pixbuf;
+//use gdk_pixbuf::Pixbuf;
 use gtk::{Builder, Button, FileChooserDialog, FileFilter};
 
 use std::env;
@@ -70,16 +70,16 @@ fn glitch_imagefile_by_numbytes(
     let _num_bytes = br.read_to_end(&mut bytes).unwrap();
     let orig_image_bytes = bytes.clone();
 
-
     let mut tries: u32 = 0;
     'parse_loop: loop {
-        bytes.clear(); bytes.clone_from(&orig_image_bytes); // reset source image
+        bytes.clear();
+        bytes.clone_from(&orig_image_bytes); // reset source image
 
         for _ in 0..num_glitches {
-            let glitch_index = (rng.next_u32() as usize % bytes.len()) as usize; 
+            let glitch_index = (rng.next_u32() as usize % bytes.len()) as usize;
             // 💋
             // no u
-            
+
             bytes[glitch_index] = (rng.next_u32() % 256) as u8;
         }
 
@@ -90,7 +90,12 @@ fn glitch_imagefile_by_numbytes(
         match gdk_pixbuf::Pixbuf::new_from_stream(&instream, not_cancellable) {
             Ok(a) => return Ok(a),
 
-            Err(e) => {println!("{:?}", e); if tries > 20 { break 'parse_loop; }}
+            Err(e) => {
+                println!("{:?}", e);
+                if tries > 20 {
+                    break 'parse_loop;
+                }
+            }
         }
         tries += 1;
     }
@@ -98,13 +103,13 @@ fn glitch_imagefile_by_numbytes(
     Err(gdk_pixbuf::PixbufError::Failed)
 }
 
-fn save_pixbuf(pixbuf: &gdk_pixbuf::Pixbuf, path: &std::path::PathBuf) -> Result<(), glib::error::Error> {
-
+fn save_pixbuf(
+    pixbuf: &gdk_pixbuf::Pixbuf,
+    path: &std::path::PathBuf,
+) -> Result<(), glib::error::Error> {
     let filetype = match path.extension() {
-            Some(e) => {
-                e.to_str().unwrap().replace("jpg", "jpeg")
-            },
-            None => "jpeg".to_string()
+        Some(e) => e.to_str().unwrap().replace("jpg", "jpeg"),
+        None => "jpeg".to_string(),
     };
     let mut path = std::path::PathBuf::from(path);
     path.set_extension(&filetype);
@@ -213,7 +218,7 @@ fn main() {
                                 set_size_request(w, h);
                             img_image.set_size_request(w, h);
                         },
-                        Err(e) => {
+                        Err(_) => {
                             // Show error
                             let dlg = gtk::MessageDialog::new(
                                 Some(&((arc_builder.lock().unwrap()).get_object::<gtk::ApplicationWindow>("MainWindow").unwrap())),
@@ -330,6 +335,3 @@ fn main() {
 
     uiapp.run(&env::args().collect::<Vec<_>>());
 }
-
-
-

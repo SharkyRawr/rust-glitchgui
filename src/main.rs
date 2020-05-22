@@ -211,12 +211,13 @@ fn main() {
                         Ok(buf) =>  {
                             img_image.set_from_pixbuf(Some(&buf));
                             // Resize ApplicationWindow to fit screen (todo: use actual screen dimensions)
-                            let img_alloc = img_image.get_allocation();
-                            let w = img_alloc.width.max(1920);
-                            let h = img_alloc.height.max(1080);
+                            // this stuff doesnt work yet!
+                            /*let img_alloc = img_image.get_allocation();
+                            let mut w = img_alloc.width; if w > 1000 { w = 1000; }
+                            let mut h = img_alloc.height; if h > 1000 { h = 1000; }
                             arc_builder.lock().unwrap().get_object::<gtk::ApplicationWindow>("MainWindow").unwrap().
                                 set_size_request(w, h);
-                            img_image.set_size_request(w, h);
+                            img_image.set_size_request(w, h);*/
                         },
                         Err(_) => {
                             // Show error

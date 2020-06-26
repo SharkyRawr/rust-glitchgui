@@ -1,6 +1,5 @@
 {
     "files.watcherExclude": {
         "/target/**": true
-    },
-    "rust-analyzer.updates.channel": "nightly",
+    }
 }
